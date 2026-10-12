@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Expedientes Judiciales - SICE Verde</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        greenDark: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#0f3822',
+                            950: '#082314'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col font-sans text-slate-800">
+
+    <!-- Modal de Advertencia Académica -->
+    <div id="academic-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-greenDark-950">
+            <div class="bg-greenDark-900 p-6 text-center relative">
+                <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto border border-greenDark-700 text-green-300 text-2xl font-bold">
+                    ⚠️
+                </div>
+            </div>
+            <div class="p-8 text-center space-y-4">
+                <h3 class="text-xl font-bold text-greenDark-900">Advertencia: Entorno de Simulación Académica</h3>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Esta demostración permite consultar de manera simulada los expedientes judiciales y documentos PDF integrados. Los datos mostrados tienen fines exclusivamente académicos.
+                </p>
+                <button onclick="closeModal()" class="w-full bg-greenDark-900 hover:bg-greenDark-800 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Principal -->
+    <header class="bg-greenDark-900 text-white shadow-md">
+        <!-- Barra superior de utilidades -->
+        <div class="max-w-7xl mx-auto px-4 py-2 flex flex-col sm:flex-row justify-between items-center text-xs border-b border-greenDark-800 gap-2">
+            <div class="flex items-center space-x-2">
+                <span class="bg-greenDark-950 px-2 py-1 rounded border border-greenDark-700 font-mono">ID GOB.PE</span>
+                <span class="text-green-200">Sistema Integrado de Consulta de Expedientes (SICE)</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex space-x-1">
+                    <button onclick="setLang('es')" id="btn-es" class="px-2 py-1 bg-greenDark-700 rounded font-bold text-white transition">ES</button>
+                    <button onclick="setLang('en')" id="btn-en" class="px-2 py-1 bg-greenDark-950 rounded text-slate-300 hover:text-white transition">EN</button>
+                    <button onclick="setLang('qu')" id="btn-qu" class="px-2 py-1 bg-greenDark-950 rounded text-slate-300 hover:text-white transition">QU</button>
+                    <button onclick="setLang('ay')" id="btn-ay" class="px-2 py-1 bg-greenDark-950 rounded text-slate-300 hover:text-white transition">AY</button>
+                </div>
+                <div class="bg-greenDark-950 px-3 py-1 rounded text-green-300 font-mono text-[11px]" id="session-timer">
+                    Fecha: 12/10/2026 | Sesión: 07:15
+                </div>
+            </div>
+        </div>
+
+        <!-- Título y Logotipo -->
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-greenDark-700 rounded-lg flex items-center justify-center font-bold text-lg shadow">⚖️</div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wide">PODER JUDICIAL DEL PERÚ</h1>
+                    <p class="text-xs text-green-300">Cortes Superiores de Justicia - Versión 2.5.0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menú de Navegación -->
+        <nav class="bg-greenDark-950 px-4">
+            <div class="max-w-7xl mx-auto flex space-x-6 text-sm font-medium py-2 text-green-100">
+                <a href="#" class="hover:text-green-300 transition border-b-2 border-green-400 pb-1">INICIO</a>
+                <a href="#" class="hover:text-green-300 transition">VIDEOTUTORIALES</a>
+                <a href="#" class="hover:text-green-300 transition">PREGUNTAS FRECUENTES</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+
+        <!-- Comunicado Institucional -->
+        <div class="bg-white border-l-4 border-greenDark-700 p-4 rounded-r-xl shadow-sm text-xs sm:text-sm text-slate-700">
+            <span class="font-bold text-greenDark-900 block mb-1">COMUNICADO OFICIAL:</span>
+            A partir de la fecha, se ha incluido un nuevo campo como medida técnica de protección para que solo las partes involucradas puedan acceder a sus expedientes, en cumplimiento de la Ley N° 29733 de Protección de Datos Personales.
+        </div>
+
+        <!-- Tarjeta de Búsqueda -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-greenDark-900 text-white font-bold px-6 py-3 flex justify-between items-center text-sm">
+                <span>BÚSQUEDA DE EXPEDIENTES</span>
+            </div>
+
+            <!-- Pestañas de Búsqueda -->
+            <div class="flex border-b border-slate-200 bg-slate-50 text-sm font-semibold">
+                <button onclick="switchTab('filters')" id="tab-filters" class="flex-1 py-3 text-center text-greenDark-900 border-b-2 border-greenDark-700 bg-white">Por filtros</button>
+                <button onclick="switchTab('code')" id="tab-code" class="flex-1 py-3 text-center text-slate-500 hover:text-slate-800">Por Código de Expediente</button>
+            </div>
+
+            <!-- Formulario por Filtros -->
+            <div id="form-filters" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">Distrito Judicial (*):</label>
+                        <select id="filtro-distrito" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-greenDark-700 focus:outline-none">
+                            <option value="PUNO">PUNO</option>
+                            <option value="LIMA">LIMA</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">Instancia (*):</label>
+                        <select id="filtro-instancia" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-greenDark-700 focus:outline-none">
+                            <option value="JUZGADO DE PAZ LETRADO">JUZGADO DE PAZ LETRADO</option>
+                            <option value="JUZGADO CIVIL">JUZGADO CIVIL</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">Especialidad (*):</label>
+                        <select id="filtro-especialidad" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-greenDark-700 focus:outline-none">
+                            <option value="FAMILIA CIVIL">FAMILIA CIVIL</option>
+                            <option value="CIVIL">CIVIL</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">Año (*):</label>
+                        <input type="text" id="filtro-anio" value="2025" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-greenDark-700 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">N° Expediente (*):</label>
+                        <input type="text" id="filtro-num" value="00203" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-greenDark-700 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">Parte (*):</label>
+                        <input type="text" id="filtro-parte" value="FRANC" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-greenDark-700 focus:outline-none uppercase">
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-500 italic">Ingresar ambos apellidos (paterno y materno) o razón social respetando el orden exacto.</p>
+
+                <!-- Código Captcha simulado -->
+                <div class="pt-4 border-t border-slate-200 flex flex-col items-center space-y-3">
+                    <span class="text-xs font-semibold text-slate-600">Escribe el código mostrado:</span>
+                    <div class="bg-black text-red-500 font-mono tracking-widest text-xl px-6 py-2 rounded font-bold select-none">
+                        z L L 5 j
+                    </div>
+                    <input type="text" id="captcha-input" placeholder="Ingrese código" class="border border-slate-300 rounded-lg px-4 py-2 text-center font-mono w-48 text-sm focus:outline-none focus:ring-2 focus:ring-greenDark-700">
+                    
+                    <button onclick="realizarBusqueda()" class="bg-greenDark-900 hover:bg-greenDark-800 text-white font-bold py-3 px-10 rounded-xl shadow transition text-sm">
+                        CONSULTAR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulario por Código -->
+            <div id="form-code" class="p-6 space-y-4 hidden">
+                <div>
+                    <label class="block font-medium text-slate-700 mb-1">Código Único de Expediente:</label>
+                    <input type="text" id="input-codigo-directo" placeholder="Ej. 00203-2025-0-2101-JP-FC-01" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-greenDark-700">
+                </div>
+                <button onclick="realizarBusquedaDirecta()" class="bg-greenDark-900 hover:bg-greenDark-800 text-white font-bold py-3 px-10 rounded-xl shadow transition text-sm">
+                    CONSULTAR CÓDIGO
+                </button>
+            </div>
+        </div>
+
+        <!-- Sección de Resultados -->
+        <div id="resultado-seccion" class="hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 class="text-md font-bold text-greenDark-900 mb-4 pb-2 border-b border-slate-200">RESULTADO DE LA BÚSQUEDA</h3>
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex justify-between items-center text-sm">
+                   <div>
+                       <span class="font-bold text-greenDark-900">Expedientes encontrados: 1</span>
+                       <p class="text-xs text-slate-600">DEMANDADO: FRANC ******, DEMANDANTE: ALEURELIA ******</p>
+                   </div>
+                   <button onclick="verDetalleExpediente()" class="bg-greenDark-700 hover:bg-greenDark-800 text-white p-2.5 rounded-lg shadow transition flex items-center gap-1 text-xs font-semibold">
+                       🔍 Ver Detalle Completo
+                   </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalle Completo del Expediente (Estilo Capturas) -->
+        <div id="detalle-expediente" class="hidden space-y-6">
+            
+            <!-- Reporte de Expediente -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-greenDark-900 text-white font-bold px-6 py-3 text-sm flex justify-between items-center">
+                    <span>REPORTE DE EXPEDIENTE</span>
+                    <span class="text-xs text-green-300">N° 00203-2025-0-2101-JP-FC-01</span>
+                </div>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
+                    <div><span class="text-slate-500 font-medium">Expediente N°:</span> <span class="font-bold text-slate-900">00203-2025-0-2101-JP-FC-01</span></div>
+                    <div><span class="text-slate-500 font-medium">Distrito Judicial:</span> <span class="font-bold text-slate-900">PUNO</span></div>
+                    <div><span class="text-slate-500 font-medium">Órgano Jurisdiccional:</span> <span class="font-bold text-slate-900">1° JUZGADO DE PAZ LETRADO DE FAMILIA</span></div>
+                    <div><span class="text-slate-500 font-medium">Especialista Legal:</span> <span class="font-bold text-slate-900">DIANA ******</span></div>
+                    <div><span class="text-slate-500 font-medium">Juez:</span> <span class="font-bold text-slate-900">MARY ****** / ELVER ******</span></div>
+                    <div><span class="text-slate-500 font-medium">Proceso:</span> <span class="font-bold text-slate-900">PROCESO SIMPLIFICADO VIRTUAL DE PENSIÓN DE ALIMENTOS</span></div>
+                    <div><span class="text-slate-500 font-medium">Fecha de Inicio:</span> <span class="font-bold text-slate-900">24/01/2025</span></div>
+                    <div><span class="text-slate-500 font-medium">Especialidad:</span> <span class="font-bold text-slate-900">FAMILIA CIVIL</span></div>
+                    <div><span class="text-slate-500 font-medium">Observación:</span> <span class="text-slate-700 text-xs">Expediente con estado procesal final. Cuenta Banco Nación: 04-192-193325.</span></div>
+                    <div><span class="text-slate-500 font-medium">Estado:</span> <span class="font-bold text-red-600">EJECUCIÓN / COSA JUZGADA</span></div>
+                    <div><span class="text-slate-500 font-medium">Materia(s):</span> <span class="font-bold text-slate-900">ALIMENTOS</span></div>
+                    <div><span class="text-slate-500 font-medium">Fecha Conclusión:</span> <span class="font-bold text-slate-900">26/09/2025</span></div>
+                    <div><span class="text-slate-500 font-medium">Etapa Procesal:</span> <span class="font-bold text-slate-900">EJECUCIÓN</span></div>
+                    <div><span class="text-slate-500 font-medium">Motivo Conclusión:</span> <span class="font-bold text-slate-900">SENTENCIA CONSENTIDA</span></div>
+                    <div><span class="text-slate-500 font-medium">Sumilla:</span> <span class="font-bold text-slate-900">DEMANDA DE ALIMENTOS (S/ 1,000.00)</span></div>
+                </div>
+            </div>
+
+            <!-- Avance Global y Línea de Tiempo -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden p-6 space-y-6">
+                <h3 class="text-sm font-bold text-greenDark-900">ESTADO, PROGRESO Y LÍNEA DE TIEMPO (MCCLO)</h3>
+                
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs font-bold text-slate-600">
+                        <span>Avance Global del Proceso</span>
+                        <span class="text-greenDark-800">95%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+                        <div class="bg-greenDark-700 h-full w-[95%]"></div>
+                    </div>
+                    <p class="text-xs text-slate-500">El proceso cuenta con autoridad de Cosa Juzgada y se encuentra en etapa de ejecución.</p>
+                </div>
+
+                <!-- Hitos y Etapas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                    <!-- Etapas Procesales -->
+                    <div class="space-y-4">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-greenDark-900">ETAPA PROCESAL (MODELO ORAL)</h4>
+                        <ul class="space-y-3 text-xs">
+                            <li class="flex items-center space-x-3 text-slate-700">
+                                <span class="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">✓</span>
+                                <div><p class="font-semibold">Calificación de Demanda</p><span class="text-slate-400">Requisitos de admisibilidad.</span></div>
+                            </li>
+                            <li class="flex items-center space-x-3 text-slate-700">
+                                <span class="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">✓</span>
+                                <div><p class="font-semibold">Trámite y Audiencia (Única)</p><span class="text-slate-400">Conciliación y actuación de pruebas.</span></div>
+                            </li>
+                            <li class="flex items-center space-x-3 text-slate-700">
+                                <span class="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">✓</span>
+                                <div><p class="font-semibold">Sentencia</p><span class="text-slate-400">Emisión del fallo que resuelve el fondo.</span></div>
+                            </li>
+                            <li class="flex items-center space-x-3 text-slate-700">
+                                <span class="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">✓</span>
+                                <div><p class="font-semibold">Impugnaciones (Nulidad)</p><span class="text-slate-400">Rechazo de recursos dilatorios.</span></div>
+                            </li>
+                            <li class="flex items-center space-x-3 text-slate-900 bg-green-50 p-2 rounded-lg border border-green-200">
+                                <span class="w-6 h-6 bg-greenDark-700 text-white rounded-full flex items-center justify-center font-bold">⚖️</span>
+                                <div><p class="font-bold">Ejecución (ETAPA ACTUAL)</p><span class="text-slate-500">Cumplimiento forzado de disposiciones.</span></div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Hitos del Expediente -->
+                    <div class="space-y-4">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-greenDark-900">HITOS DEL EXPEDIENTE</h4>
+                        <div class="space-y-3 text-xs border-l-2 border-greenDark-700 pl-4">
+                            <div><p class="font-bold text-slate-800">Presentación de Demanda</p><span class="text-slate-400">24/01/2025</span></div>
+                            <div><p class="font-bold text-slate-800">Auto Admisorio (Res. 01)</p><span class="text-slate-400">27/01/2025</span></div>
+                            <div><p class="font-bold text-slate-800">Audiencia Única</p><span class="text-slate-400">20/03/2025</span></div>
+                            <div><p class="font-bold text-slate-800">Sentencia (Res. 08)</p><span class="text-slate-400">31/03/2025 - Fija Pensión S/ 1,000.00</span></div>
+                            <div><p class="font-bold text-red-700">Cosa Juzgada (Res. 13)</p><span class="text-slate-400">26/09/2025 - Inicia etapa de ejecución.</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seguimiento de Resoluciones y Documentos -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+                <h3 class="text-sm font-bold text-greenDark-900">SEGUIMIENTO DEL EXPEDIENTE (RESOLUCIONES Y NOTIFICACIONES)</h3>
+                
+                <div class="border border-slate-200 rounded-lg p-4 space-y-3 bg-slate-50">
+                    <div class="flex justify-between items-center text-xs text-slate-500 font-semibold border-b pb-2">
+                        <span>Fecha: 26/09/2025</span>
+                        <span class="bg-greenDark-900 text-white px-2 py-0.5 rounded">RESOLUCIÓN N° 13</span>
+                    </div>
+                    <p class="text-xs text-slate-700"><span class="font-bold">Sumilla:</span> DECLARA CONSENTIDA LA SENTENCIA FAMILIA N° 60-2025 — ADQUIERE CALIDAD DE COSA JUZGADA.</p>
+                    <p class="text-xs text-slate-500">Usuario Responsable: <span class="font-semibold text-slate-700">ELVER ******</span></p>
+                    
+                    <button onclick="abrirVisorPDF('13 RESOLUCIÓN CATORCE.pdf')" class="bg-greenDark-700 hover:bg-greenDark-800 text-white text-xs font-bold py-2 px-4 rounded shadow transition flex items-center gap-2">
+                        📄 VER DOCUMENTO (PDF)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-greenDark-900 text-white text-center py-4 text-xs mt-auto">
+        <p>&copy; 2026 Poder Judicial del Perú - Entorno Académico Optimizado para Vercel</p>
+    </footer>
+
+    <!-- Lógica de Interacción -->
+    <script>
+        function closeModal() {
+            document.getElementById('academic-modal').style.display = 'none';
+        }
+
+        function switchTab(tab) {
+            if (tab === 'filters') {
+                document.getElementById('form-filters').classList.remove('hidden');
+                document.getElementById('form-code').classList.add('hidden');
+                document.getElementById('tab-filters').className = "flex-1 py-3 text-center text-greenDark-900 border-b-2 border-greenDark-700 bg-white font-semibold";
+                document.getElementById('tab-code').className = "flex-1 py-3 text-center text-slate-500 hover:text-slate-800 font-semibold";
+            } else {
+                document.getElementById('form-filters').classList.add('hidden');
+                document.getElementById('form-code').classList.remove('hidden');
+                document.getElementById('tab-code').className = "flex-1 py-3 text-center text-greenDark-900 border-b-2 border-greenDark-700 bg-white font-semibold";
+                document.getElementById('tab-filters').className = "flex-1 py-3 text-center text-slate-500 hover:text-slate-800 font-semibold";
+            }
+        }
+
+        function realizarBusqueda() {
+            const captcha = document.getElementById('captcha-input').value.trim();
+            if(!captcha) {
+                alert("Por favor ingrese el código de validación captcha.");
+                return;
+            }
+            document.getElementById('resultado-seccion').classList.remove('hidden');
+            window.scrollTo({ top: 400, behavior: 'smooth' });
+        }
+
+        function realizarBusquedaDirecta() {
+            document.getElementById('resultado-seccion').classList.remove('hidden');
+            window.scrollTo({ top: 400, behavior: 'smooth' });
+        }
+
+        function verDetalleExpediente() {
+            document.getElementById('detalle-expediente').classList.remove('hidden');
+            window.scrollTo({ top: 800, behavior: 'smooth' });
+        }
+
+        function abrirVisorPDF(nombreArchivo) {
+            alert("Abriendo el documento de simulación académica: " + nombreArchivo + "\nPuedes respaldar tus archivos PDF en la misma ruta de tu repositorio en GitHub para acceso directo.");
+        }
+
+        function setLang(lang) {
+            ['es', 'en', 'qu', 'ay'].forEach(l => {
+                const btn = document.getElementById('btn-' + l);
+                if (l === lang) {
+                    btn.className = "px-2 py-1 bg-greenDark-700 rounded font-bold text-white transition";
+                } else {
+                    btn.className = "px-2 py-1 bg-greenDark-950 rounded text-slate-300 hover:text-white transition";
+                }
+            });
+        }
+    </script>
+</body>
+</html>
